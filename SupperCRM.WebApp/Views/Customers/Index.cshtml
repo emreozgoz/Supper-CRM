@@ -1,0 +1,409 @@
+﻿@model List<SupperCRM.Entities.Client>
+@{
+    ViewData["Title"] = "Müşteriler";
+    ViewData["PageTitle"] = "Müşteriler";
+    ViewData["PageName"] = "customers-index";
+
+}
+<style>
+    .input-group.input-group-outline .form-label {
+        top: -0.6rem;
+    }
+</style>
+<div class="row">
+    <div class="col-12">
+        <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Müşteri Listesi</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="px-4 d-flex justify-content-between">
+                    <div>
+                        <button class="btn btn-icon btn-3 btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#modal-create-default">
+                            <i class="fa fa-plus me-2"></i>
+                            <span>Yeni Müşteri</span>
+                        </button>
+                    </div>
+                    <div>
+                        <div class="input-group input-group-sm input-group-outline @(ViewData["keyword"] != null ? "is-filled" : "")">
+                            <label class="form-label">Arama</label>
+                            <input type="text" class="form-control form-control-sm" id="search" value="@ViewData["keyword"]">
+                            @if (ViewData["keyword"] != null)
+                            {
+                                <span>
+                                    <a asp-action="Index" class="ms-3 text-sm text-sm-danger">Temizle</a>
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ad Soyad / Şirket Adı</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">E-Posta</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bireysel / Kurumsal</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Durum</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Kayıt Tarihi</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model == null || Model.Count == 0)
+                            {
+                                <tr>
+                                    <td class="text-center" colspan="6">
+                                        <span class="text-xs font-weight-bold mb-0">Data Yok</span>
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <p class="text-xs font-weight-bold mb-0">@item.Name</p>
+
+                                    </td>
+                                    <td class="text-center">
+                                        <p class="text-xs font-weight-bold mb-0">@item.Email</p>
+                                    </td>
+                                    <td class="text-center">
+                                        <p class="text-xs font-weight-bold mb-0">@(item.isCorporate ? "Kurumsal" : "Bireysel")</p>
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        <span class="badge badge-sm bg-gradient-@(item.Locked ? "secondary":"success")">@(item.Locked ? "Pasif" : "Aktif")</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-xs font-weight-bold">@item.CreatedAt</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal-edit-default" onclick="setEditClientModal(@item.Id)" class="text-info font-weight-bold text-xs me-2">
+                                            Düzenle
+                                        </a>
+                                        <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal-detail-default" onclick="getDetail(@item.Id)" class="text-secondary font-weight-bold text-xs me-2">
+                                            Detay
+                                        </a>
+                                        <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal-delete-default" onclick="setDeleteClientModal(@item.Id)" class="text-danger font-weight-bold text-xs me-2">
+                                            Sil
+                                        </a>
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="modal-create-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+            <div class="modal-dialog modal- modal-dialog-centered modal-" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title font-weight-normal" id="modal-title-default">Yeni Müşteri Oluştur</h6>
+                        <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <partial name="_ModalInput" model="@(new ModalInputViewModel())" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn bg-gradient-primary" onclick="createClient()">Kaydet</button>
+                        <button type="button" class="btn btn-link  ml-auto" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-edit-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+            <div class="modal-dialog modal- modal-dialog-centered modal-" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title font-weight-normal" id="modal-title-default">Yeni Müşteri Oluştur</h6>
+                        <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <partial name="_ModalInput" model="@(new ModalInputViewModel{hasClientId = true})" />
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn bg-gradient-warning" onclick="updateClient()">Güncelle</button>
+                        <button type="button" class="btn btn-link  ml-auto" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-detail-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+            <div class="modal-dialog modal- modal-dialog-centered modal-" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title font-weight-normal" id="modal-title-default">Yeni Müşteri Oluştur</h6>
+                        <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <partial name="_ModalInput" model="@(new ModalInputViewModel{isReadonly = true})" />
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-delete-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+            <div class="modal-dialog modal- modal-dialog-centered modal-" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title font-weight-normal" id="modal-title-default">Yeni Müşteri Oluştur</h6>
+                        <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <partial name="_ModalInput" model="@(new ModalInputViewModel{hasClientId=true, isReadonly=true,Description = "test"})" />
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn bg-gradient-danger" onclick="deleteClient()">Sil</button>
+                        <button type="button" class="btn btn-link  ml-auto" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        function createClient() {
+            var modal_body = $('#modal-create-default .modal-body');
+            var fname = modal_body.find('#name').val();
+            var email = modal_body.find('#email').val();
+            var phone = modal_body.find('#phone').val();
+            var isCorporate = modal_body.find('#isCorporate').is(':checked');
+            var locked = modal_body.find('#isLocked').is(':checked');
+            var desc = modal_body.find('#desc').val();
+            var fid = modal_body.find('clientId').val();
+
+            var data = {
+                "name": fname,
+                "email": email,
+                "phone": phone,
+                "isCorporate": isCorporate,
+                "locked": locked,
+                "description": desc
+            };
+            $.ajax({
+                method: "post",
+                url: "/Customers/Edit/" + fid,
+                data: data,
+                beforeSend: function () {
+                    modal_body.find(".is-invalid").removeClass("is-invalid");
+                }
+
+            }).done(function (result) {
+                console.log("result", result)
+
+                if (result.error == true) {
+                    for (var i in result.errors) {
+                        var err = result.errors[i];
+                        modal_body.find("#" + err.key.toLocaleLowerCase()).parent().addClass("is-invalid");
+                        toastr.error(err.value, "Hata");
+                    }
+                } else {
+                    toastr.success(result.success, "Başarılı");
+                    window.location.reload();
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+        }
+        function setEditClientModal(clientId) {
+            $.ajax({
+                method: "get",
+                url: "/Customers/Edit/" + clientId
+            }).done(function (result) {
+                if (result != null) {
+                    var modal_body = $("#modal-edit-default .modal-body");
+
+                    var inp_name = modal_body.find("#name");
+                    var inp_email = modal_body.find("#email");
+                    var inp_phone = modal_body.find("#phone");
+                    var inp_isCorporate = modal_body.find("#isCorporate");
+                    var inp_isLocked = modal_body.find("#isLocked");
+                    var inp_desc = modal_body.find("#desc");
+                    var inp_clientId = modal_body.find("#clientId");
+
+
+                    inp_name.val(result.object.name);
+                    inp_email.val(result.object.email);
+                    inp_phone.val(result.object.phone);
+                    inp_desc.val(result.object.description);
+                    inp_isCorporate.prop('checked', result.object.isCorporate);
+                    inp_isLocked.prop('checked', result.object.locked);
+                    inp_clientId.val(result.object.id);
+
+
+                    if (inp_name.val() != null) inp_name.parent().addClass("is-filled");
+                    if (inp_email.val() != null) inp_email.parent().addClass("is-filled");
+                    if (inp_phone.val() != null) inp_phone.parent().addClass("is-filled");
+                    if (inp_desc.val() != null) inp_desc.parent().addClass("is-filled");
+                }
+            });
+        }
+        function updateClient() {
+            var modal_body = $('#modal-edit-default .modal-body');
+            var fname = modal_body.find('#name').val();
+            var email = modal_body.find('#email').val();
+            var phone = modal_body.find('#phone').val();
+            var isCorporate = modal_body.find('#isCorporate').is(':checked');
+            var locked = modal_body.find('#isLocked').is(':checked');
+            var desc = modal_body.find('#desc').val();
+
+            var data = {
+                "name": fname,
+                "email": email,
+                "phone": phone,
+                "isCorporate": isCorporate,
+                "locked": locked,
+                "description": desc
+            };
+            $.ajax({
+                method: "post",
+                url: "/Customers/Create",
+                data: data,
+                beforeSend: function () {
+                    modal_body.find(".is-invalid").removeClass("is-invalid");
+                }
+
+            }).done(function (result) {
+                console.log("result", result)
+
+                if (result.error == true) {
+                    for (var i in result.errors) {
+                        var err = result.errors[i];
+                        modal_body.find("#" + err.key.toLocaleLowerCase()).parent().addClass("is-invalid");
+                        toastr.error(err.value, "Hata");
+                    }
+                } else {
+                    toastr.success(result.success, "Başarılı");
+                    window.location.reload();
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+        }
+        function getDetail(clientId) {
+            $.ajax({
+                method: "get",
+                url: "/Customers/Details/" + clientId
+            }).done(function (result) {
+                if (result != null) {
+                    var modal_body = $("#modal-detail-default .modal-body");
+
+                    var inp_name = modal_body.find("#name");
+                    var inp_email = modal_body.find("#email");
+                    var inp_phone = modal_body.find("#phone");
+                    var inp_isCorporate = modal_body.find("#isCorporate");
+                    var inp_isLocked = modal_body.find("#isLocked");
+                    var inp_desc = modal_body.find("#desc");
+                    var inp_clientId = modal_body.find("#clientId");
+
+
+                    inp_name.val(result.object.name);
+                    inp_email.val(result.object.email);
+                    inp_phone.val(result.object.phone);
+                    inp_desc.val(result.object.description);
+                    inp_isCorporate.prop('checked', result.object.isCorporate);
+                    inp_isLocked.prop('checked', result.object.locked);
+                    inp_clientId.val(result.object.id);
+
+
+                    if (inp_name.val() != null) inp_name.parent().addClass("is-filled");
+                    if (inp_email.val() != null) inp_email.parent().addClass("is-filled");
+                    if (inp_phone.val() != null) inp_phone.parent().addClass("is-filled");
+                    if (inp_desc.val() != null) inp_desc.parent().addClass("is-filled");
+                }
+            });
+        }
+        function setDeleteClientModal(clientId) {
+            $.ajax({
+                method: "get",
+                url: "/Customers/Details/" + clientId
+            }).done(function (result) {
+                if (result != null) {
+                    var modal_body = $("#modal-delete-default .modal-body");
+
+                    var inp_name = modal_body.find("#name");
+                    var inp_email = modal_body.find("#email");
+                    var inp_phone = modal_body.find("#phone");
+                    var inp_isCorporate = modal_body.find("#isCorporate");
+                    var inp_isLocked = modal_body.find("#isLocked");
+                    var inp_desc = modal_body.find("#desc");
+                    var inp_clientId = modal_body.find("#clientId");
+
+                    inp_name.val(result.object.name);
+                    inp_email.val(result.object.email);
+                    inp_phone.val(result.object.phone);
+                    inp_desc.val(result.object.description);
+                    inp_isCorporate.prop('checked', result.object.isCorporate);
+                    inp_isLocked.prop('checked', result.object.locked);
+                    inp_clientId.val(result.object.id);
+
+
+                    if (inp_name.val() != null) inp_name.parent().addClass("is-filled");
+                    if (inp_email.val() != null) inp_email.parent().addClass("is-filled");
+                    if (inp_phone.val() != null) inp_phone.parent().addClass("is-filled");
+                    if (inp_desc.val() != null) inp_desc.parent().addClass("is-filled");
+                }
+            });
+        }
+        function deleteClient() {
+            var modal_body = $('#modal-delete-default .modal-body');
+            var fid = modal_body.find("#clientId").val();
+            $.ajax({
+                method: "post",
+                url: "/Customers/Delete/" + fid,
+            }).done(function (result) {
+                if (result.error == true) {
+                    for (var i in result.errors) {
+                        toastr.error(err.value, "Hata");
+                    }
+                } else {
+                    toastr.success(result.success, "Başarılı");
+                    window.location.reload();
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+        }
+        $(function () {
+            $("#search").keyup(function (e) {
+                if (e.key == "Enter") {
+                    var keyword = $(this).val();
+                    window.location = "/Customers/Index?keyword=" + encodeURI(keyword);
+                }
+            });
+        });
+    </script>
+}

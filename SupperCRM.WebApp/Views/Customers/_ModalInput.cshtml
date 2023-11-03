@@ -1,0 +1,37 @@
+﻿@model ModalInputViewModel
+
+<p class="text-sm">@Model.Description</p>
+<div class="input-group input-group-outline my-3">
+    <label class="form-label">Ad Soyad / Şirket Adı</label>
+    <input @(Model.isReadonly ? "disabled" : "") id="name" type="text" class="form-control">
+</div>
+<div class="input-group input-group-outline  my-3">
+    <label class="form-label">Email</label>
+    <input @(Model.isReadonly ? "disabled" : "") id="email" type="email" class="form-control">
+</div>
+<div class="input-group input-group-outline  my-3">
+    <label class="form-label">Telefon</label>
+    <input @(Model.isReadonly ? "disabled" : "") id="phone" type="tel" class="form-control">
+</div>
+<div>
+    <div class="form-check my-3">
+        <input @(Model.isReadonly ? "disabled" : "") class="form-check-input" type="checkbox" id="isCorporate">
+        <label class="custom-control-label" for="customCheck1">Kurumsal</label>
+    </div>
+</div>
+<div>
+    <div class="form-check my-3">
+        <input @(Model.isReadonly ? "disabled" : "") class="form-check-input" type="checkbox" id="isLocked">
+        <label class="custom-control-label" for="customCheck1">Pasif </label>
+    </div>
+</div>
+<div class="input-group input-group-outline  my-3">
+    <label class="form-label">Açıklama</label>
+    <textarea @(Model.isReadonly ? "disabled" : "") id="desc" cols="30" rows="2" class="form-control"></textarea>
+</div>
+@if (Model.hasClientId)
+{
+    <input type="hidden" id="clientId" value="" />
+
+}
+
