@@ -8,7 +8,7 @@ step "deploy-a-package" {
     action {
         action_type = "Octopus.TentaclePackage"
         properties = {
-            Octopus.Action.EnabledFeatures = ",Octopus.Features.ConfigurationTransforms,Octopus.Features.ConfigurationVariables"
+            Octopus.Action.EnabledFeatures = "Octopus.Features.ConfigurationVariables,Octopus.Features.ConfigurationTransforms"
             Octopus.Action.Package.AutomaticallyRunConfigurationTransformationFiles = "True"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
