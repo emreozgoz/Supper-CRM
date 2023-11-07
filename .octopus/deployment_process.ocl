@@ -27,3 +27,22 @@ step "deploy-a-package" {
         }
     }
 }
+
+step "slack-send-simple-notification" {
+    name = "Slack - Send Simple Notification"
+    properties = {
+        Octopus.Action.TargetRoles = "emre"
+    }
+
+    action {
+        properties = {
+            Octopus.Action.RunOnServer = "false"
+            Octopus.Action.Template.Id = "ActionTemplates-1"
+            Octopus.Action.Template.Version = "15"
+            ssn_Color = "good"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool_variable = ""
+    }
+}
