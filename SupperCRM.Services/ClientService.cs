@@ -6,6 +6,24 @@ using System.Xml.Linq;
 
 namespace SupperCRM.Services
 {
+
+    public class UserService
+    {
+        private readonly IUserRepository _userRepository;
+
+        public UserService(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+        public User Authenticate(string username, string password)
+        {
+            username = username.Trim();
+            return _userRepository.GetAll(x => x.Username.ToLower() == username.ToLower() && x.Password == password).FirstOrDefault();
+        }
+    }
+
+
+
     public interface IClientService
     {
         void Create(string name, string email);
